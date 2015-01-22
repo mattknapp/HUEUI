@@ -88,6 +88,7 @@
        
           text-align: left;
           margin-bottom: 5px;
+          padding: 5px;
       }
       ol li a
       {
@@ -101,6 +102,23 @@
         cursor: pointer;
         padding: 2px;
         margin: 2px;
+      }
+      a.button.on.active
+      {
+        background-color: pink;
+      }
+      a.button.off.active
+      {
+        background-color: yellow;
+      }
+      li.lightSelected
+      {
+        color: blue;
+        background-color: white;
+      }
+      #yourLights
+      {
+        cursor: pointer;
       }
     </style>
   </head>
@@ -124,17 +142,23 @@
 
       function onStartup() {
 
-        /*$("#yourLights").on('click', 'li', function(x)
+        $("#yourLights").on('click', 'li', function(x)
         {
-       
-         jsHueUser.setLightState($(this).data('key'), { on: true }, function(x)
-         {
-           
-         });
+        
+          $("#yourLights li").removeClass("lightSelected");  
+          $("#yourLights li").eq($(this).data('key')-1).addClass("lightSelected");
 
-         return false;
+          $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.on").addClass('active');
+          $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.off").removeClass('active');
+
+           jsHueUser.setLightState($(this).data('key'), { on: true }, function(x)
+           {
+               
+           });
+
+           return false;
         });
-        */
+       
 
         $("#yourLightsButtons").on('click', 'a.button.on', function(x)
         {
@@ -144,16 +168,30 @@
              
            });
 
+           $("#yourLights li").removeClass("lightSelected");
+
+           $("#yourLights").find("[data-key="+$(this).data('key')+"]").addClass("lightSelected")
+
+
+           $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.on").addClass('active');
+           $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.off").removeClass('active');
+
+
+
            return false;
 
         });
          $("#yourLightsButtons").on('click', 'a.button.off', function(x)
         {
        
+           $("#yourLights li").removeClass("lightSelected");
            jsHueUser.setLightState($(this).data('key'), { on: false }, function(x)
            {
              
            });
+
+           $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.on").removeClass('active');
+           $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.off").addClass('active');
 
            return false;
 
@@ -191,10 +229,10 @@
           var HueContext = document.getElementById('HUECanvas').getContext('2d');
           var HueImagedata = HueContext.getImageData(x, y, 1, 1); // one Pixel at Cursor
           var HueImagePixel = HueImagedata.data; // data[] RGB of Pixel
-          
+          if ($("#yourLights li.lightSelected").length == 0)
+            return;
 
-          //don't want to turn them all on right now
-          //MyHue.GroupSetRGB(0, HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
+          MyHue.LightSetRGB($("#yourLights li.lightSelected").data('key'), HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
 
         });
 
@@ -246,9 +284,6 @@
         } else {
           MyHue.BridgeIP = localStorage.HUEPIBridgeIP;
 
-    
-
-
           $('#HUEBridgeIP').text('Cached Bridge IP: ' + MyHue.BridgeIP);
           MyHue.BridgeGetData().then(function CheckWhitelisting() {
             if (MyHue.BridgeUsernameWhitelisted) {
@@ -276,18 +311,7 @@
 
 
         jsHueUser = _jsHue.bridge(MyHue.BridgeIP).user('085efe879ee3ed83c04efc28a0da03d3');
-      
-
-        jsHueUser.getLights(function(x)
-          {  
-            Object.keys(x).forEach(function(key,index){ 
-              $("#yourLights").append('<li data-key=' + key + '>'+ x[key].name + '</li>');
-              $("#yourLightsButtons").append('<li><a data-key=' + key + ' class="button on">ON</a><a data-key=' + key + ' class="button off">OFF</a></li>');
-            })
-            
-          });
-
-
+     
       }
 
       function onPause() {
@@ -320,6 +344,39 @@
           // Triggers on Reachable which actually means Powered On/Off in my case ;-)
           LightNr = 1;
           while (MyHue.Lights[LightNr]) {
+
+                if ($("#yourLights li").length == 0)
+                {
+                  while (MyHue.Lights[LightNr]) {
+                    $("#yourLights").append('<li data-key=' + LightNr + '>'+ MyHue.Lights[LightNr].name + '</li>');
+                    $("#yourLightsButtons").append('<li data-key=' + LightNr + '><a data-key=' + LightNr + ' class="button on">ON</a><a data-key=' + LightNr + ' class="button off">OFF</a></li>');
+                    LightNr++;
+                  }
+                  LightNr = 1;
+                }
+
+
+                if (MyHue.Lights[LightNr].state)
+                {
+                     if (MyHue.Lights[LightNr].state.on == true && MyHue.Lights[LightNr].state.reachable)
+                     {
+                        $("#yourLightsButtons li").eq(LightNr-1).find('.button.on').addClass('active');
+                        $("#yourLightsButtons li").eq(LightNr-1).find('.button.off').removeClass('active')
+                     }
+                     else
+                     {
+                       $("#yourLightsButtons li").eq(LightNr-1).find('.button.off').addClass('active');
+                       $("#yourLightsButtons li").eq(LightNr-1).find('.button.on').removeClass('active')
+                     }
+                }    
+                else
+                {
+                  $("#yourLightsButtons li").eq(LightNr-1).find('.button.off').addClass('active')
+                  $("#yourLightsButtons li").eq(LightNr-1).find('.button.on').removeClass('active')
+                }
+
+
+            /*I don't get the point of this: MWK
             if ((MyHue.Lights[LightNr].state.reachable) !== (PrevHueLights[LightNr].state.reachable)) {
               LightSwitchOnEvent.LightNr = LightNr;
               if (MyHue.Lights[LightNr].state.reachable)
@@ -327,8 +384,15 @@
               else
                 document.dispatchEvent(LightSwitchOffEvent);
             }
+            */
             LightNr++;
           }
+/*
+ 
+*/
+
+
+
         }, function BridgetHeartbeatGetFailed() {
           $('#HUEStatus').text('StatusHeartbeat BridgeGet Failed');
           $('#HUEInfoBar').show(1500);

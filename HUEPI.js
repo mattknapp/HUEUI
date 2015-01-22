@@ -556,7 +556,7 @@ HUEPI.prototype.LightSetRGB = function(LightNr, Red, Green, Blue, Transitiontime
   var Point = HUEPI.HelperRGBtoXY(Red / 255, Green / 255, Blue / 255);
   var HueAngSatBri = HUEPI.HelperRGBtoHueAngSatBri(Red / 255, Green / 255, Blue / 255);
   return $.when(
-  this.LightSetBrightness(Math.round(HueAngSatBri.Bri * 255)),
+  this.LightSetBrightness(LightNr, Math.round(HueAngSatBri.Bri * 255)),
   this.LightSetXY(LightNr, Point.x, Point.y, Transitiontime)
   );
 };
