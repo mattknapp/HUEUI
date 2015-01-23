@@ -11,14 +11,14 @@
     <meta name='apple-mobile-web-app-capable' content='yes' />
     <meta name='apple-mobile-web-app-status-bar-style' content='black' />
 
-    <script src='http://code.jquery.com/jquery-1.10.2.min.js' type='text/javascript' ></script>
-    <script src='http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js' type='text/javascript' ></script>
-    <link rel='stylesheet' href='http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.css'/>
+    <script src='../js/jquery-latest.min.js' type='text/javascript' ></script>
+    <script src='../js/jquery.mobile-latest.min.js' type='text/javascript' ></script>
+    <link rel='stylesheet' href='../css/jquery.mobile-latest.min.css'/>
 
     <script src='../HUEPI.js' type='text/javascript'></script>
     <script src='../jshue.js' type='text/javascript'></script>
-    <script src='cordova.js' type='text/javascript' onload="javascript:window.isCordovaApp = true;"></script>
-
+    <script src='../js/colors.js' type='text/javascript'></script>
+   
     <style type='text/css'>
       html, body, .page, .ui-mobile, .ui-mobile-viewport, .ui-page {
         width: 100%;
@@ -199,7 +199,7 @@
 
 
         var HueImage = new Image();
-        HueImage.src = 'images/HUE.png';
+        HueImage.src = 'HUE.png';
 
         function HueImageRedraw() {
           var HueCanvas = document.getElementById('HUECanvas');
@@ -347,8 +347,18 @@
 
                 if ($("#yourLights li").length == 0)
                 {
+
+                   var Ang = MyHue.Lights[LightNr].state.hue * 360 / 65535;
+                    var Sat = MyHue.Lights[LightNr].state.sat / 255;
+                    var Bri = MyHue.Lights[LightNr].state.bri / 255;
+
+
+                 var theRGB = HUEPI.HelperHueAngSatBritoRGB(Ang, Sat, Bri);
+
+
+
                   while (MyHue.Lights[LightNr]) {
-                    $("#yourLights").append('<li data-key=' + LightNr + '>'+ MyHue.Lights[LightNr].name + '</li>');
+                    $("#yourLights").append('<li data-key=' + LightNr + ' style="color: rgb('+theRGB.Red+','+theRGB.Green+','+theRGB.Blue+')">'+ MyHue.Lights[LightNr].name + '</li>');
                     $("#yourLightsButtons").append('<li data-key=' + LightNr + '><a data-key=' + LightNr + ' class="button on">ON</a><a data-key=' + LightNr + ' class="button off">OFF</a></li>');
                     LightNr++;
                   }

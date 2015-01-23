@@ -553,13 +553,33 @@ HUEPI.prototype.LightSetHueAngSatBri = function(LightNr, Ang, Sat, Bri, Transiti
 
 HUEPI.prototype.LightSetRGB = function(LightNr, Red, Green, Blue, Transitiontime) // 0-255;FF
 {
+  //var HueAngSatBri = HUEPI.HelperRGBtoHueAngSatBri(Red / 255, Green / 255, Blue / 255);
+   //var State = new HUEPI.Lightstate();
+   //State.SetRGB(Red, Green, Blue);
+  //this.LightSetState(LightNr, State);
+
+//https://github.com/PhilipsHue/PhilipsHueSDK-iOS-OSX/commit/f41091cf671e13fe8c32fcced12604cd31cceaf3
+
+  /*OLD VERSION*/
   var Point = HUEPI.HelperRGBtoXY(Red / 255, Green / 255, Blue / 255);
   var HueAngSatBri = HUEPI.HelperRGBtoHueAngSatBri(Red / 255, Green / 255, Blue / 255);
   return $.when(
-  this.LightSetBrightness(LightNr, Math.round(HueAngSatBri.Bri * 255)),
+  this.LightSetBrightness(Math.round(HueAngSatBri.Bri * 255)),
   this.LightSetXY(LightNr, Point.x, Point.y, Transitiontime)
   );
+  /*END OLD VERSION*/
+
+
 };
+/*
+ State.SetHue(HueAngSatBri.Hue),
+  State.SetSaturation(HueAngSatBri.Sat),
+  
+  var State = new HUEPI.Lightstate(),
+  State.SetTransitiontime(Transitiontime),
+  return this.LightSetState(LightNr, State);
+*/
+
 
 HUEPI.prototype.LightSetCT = function(LightNr, CT, Transitiontime)
 {
