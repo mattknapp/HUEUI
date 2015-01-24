@@ -182,15 +182,90 @@ HUEPI.HelperHueAngSatBritoRGB = function(Ang, Sat, Bri)
 
 HUEPI.HelperXYtoRGB = function(x,y)
 { 
-  
-   x = x; // the given x value loat y = y; // the given y value loat z = 1.0 - x - y; loat Y = brightness; // The given brightness value loat X = (Y / y) * x;
-   Z = (Y / y) * z;
 
-   r = X * 3.2406 - Y * 1.5372 - Z * 0.4986;  g = -X * 0.9689 + Y * 1.8758 + Z * 0.0415;  b = X * 0.0557 - Y * 0.2040 + Z * 1.0570;
 
-  r = r <= 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math.pow(r, (1.0 / 2.4)) - 0.055; g = g <= 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math.pow(g, (1.0 / 2.4)) - 0.055; b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math.pow(b, (1.0 / 2.4)) - 0.055;
+     z = 1.0 - x - y;
+     y = 1;
 
-  return {r: r, g: g, b: b};
+       Y = 1.0;
+     X = (Y / y) * x;
+     Z = (Y / y) * z;
+
+
+     r = X  * 3.2406 - Y * 1.5372 - Z * 0.4986;
+     g = -X * 0.9689 + Y * 1.8758 + Z * 0.0415;
+     b = X  * 0.0557 - Y * 0.2040 + Z * 1.0570;
+
+
+    if (r > b && r > g && r > 1.0) {
+        // red is too big
+        g = g / r;
+        b = b / r;
+        r = 1.0;
+    }
+    else if (g > b && g > r && g > 1.0) {
+        // green is too big
+        r = r / g;
+        b = b / g;
+        g = 1.0;
+    }
+    else if (b > r && b > g && b > 1.0) {
+        // blue is too big
+        r = r / b;
+        g = g / b;
+        b = 1.0;
+    }
+
+   
+
+    r = r <= 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math.pow(r, (1.0 / 2.4)) - 0.055;
+    g = g <= 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math.pow(g, (1.0 / 2.4)) - 0.055;
+    b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math.pow(b, (1.0 / 2.4)) - 0.055;
+
+    if (r > b && r > g) {
+        // red is biggest
+        if (r > 1.0) {
+            g = g / r;
+            b = b / r;
+            r = 1.0;
+        }
+    }
+    else if (g > b && g > r) {
+        // green is biggest
+        if (g > 1.0) {
+            r = r / g;
+            b = b / g;
+            g = 1.0;
+        }
+    }
+    else if (b > r && b > g) {
+        // blue is biggest
+        if (b > 1.0) {
+            r = r / b;
+            g = g / b;
+            b = 1.0;
+        }
+    }
+
+ return {r: r, g: g, b: b};
+
+
+/*
+    r = (X  * 1.4628067) - (Y * 0.1840623) - (Z * 0.2743606);
+ 
+  g =  (-X * 0.5217933) + (Y * 1.4472381) + (Z * 0.0677227);
+ 
+  b = (X  * 0.0349342) - (Y * 0.0968930) + (Z * 1.2884099);
+ 
+ r = r <= 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math.pow(r, (1.0 / 2.4)) - 0.055;
+ 
+ g = g <= 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math.pow(g, (1.0 / 2.4)) - 0.055;
+ 
+ b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math.pow(b, (1.0 / 2.4)) - 0.055;
+*/
+
+
+ 
 };
 
 
@@ -566,6 +641,33 @@ HUEPI.prototype.LightSetHueAngSatBri = function(LightNr, Ang, Sat, Bri, Transiti
   Ang = Ang % 360;
   return this.LightSetHSB(LightNr, Math.round(Ang / 360 * 65535), Sat * 255, Bri * 255, Transitiontime);
 };
+
+
+HUEPI.prototype.xyBriToRgb = function(x, y, bri){
+            z = 1.0 - x - y;
+            Y = bri / 255.0; // Brightness of lamp
+            X = (Y / y) * x;
+            Z = (Y / y) * z;
+            r = X * 1.612 - Y * 0.203 - Z * 0.302;
+            g = -X * 0.509 + Y * 1.412 + Z * 0.066;
+            b = X * 0.026 - Y * 0.072 + Z * 0.962;
+            r = r <= 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math.pow(r, (1.0 / 2.4)) - 0.055;
+            g = g <= 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math.pow(g, (1.0 / 2.4)) - 0.055;
+            b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math.pow(b, (1.0 / 2.4)) - 0.055;
+            maxValue = Math.max(r,g,b);
+            r /= maxValue;
+            g /= maxValue;
+            b /= maxValue;
+            r = r * 255;   if (r < 0) { r = 255 };
+            g = g * 255;   if (g < 0) { g = 255 };
+            b = b * 255;   if (b < 0) { b = 255 };
+            return {
+                r : Math.round(r),
+                g : Math.round(g),
+                b : Math.round(b)
+            }
+        }
+
 
 HUEPI.prototype.LightSetRGB = function(LightNr, Red, Green, Blue, Transitiontime) // 0-255;FF
 {

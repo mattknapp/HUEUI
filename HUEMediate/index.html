@@ -351,17 +351,16 @@
                 if ($("#yourLights li").length == 0)
                 {
 
-                   var Ang = MyHue.Lights[LightNr].state.hue * 360 / 65535;
-                    var Sat = MyHue.Lights[LightNr].state.sat / 255;
-                    var Bri = MyHue.Lights[LightNr].state.bri / 255;
-
-
-                 var theRGB = HUEPI.HelperHueAngSatBritoRGB(Ang, Sat, Bri);
-
-
-
+                
                   while (MyHue.Lights[LightNr]) {
-                    $("#yourLights").append('<li data-key=' + LightNr + ' style="color: rgb('+theRGB.Red+','+theRGB.Green+','+theRGB.Blue+')">'+ MyHue.Lights[LightNr].name + '</li>');
+
+                     var theRGB = MyHue.xyBriToRgb(
+                      MyHue.Lights[LightNr].state.xy[0], 
+                      MyHue.Lights[LightNr].state.xy[1], 
+                      MyHue.Lights[LightNr].state.bri);
+
+
+                    $("#yourLights").append('<li data-key=' + LightNr + ' style="color: rgb('+theRGB.r+','+theRGB.g+','+theRGB.b+')">'+ MyHue.Lights[LightNr].name + '</li>');
                     $("#yourLightsButtons").append('<li data-key=' + LightNr + '><a data-key=' + LightNr + ' class="button on">ON</a><a data-key=' + LightNr + ' class="button off">OFF</a></li>');
                     LightNr++;
                   }
