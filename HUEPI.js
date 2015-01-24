@@ -178,6 +178,22 @@ HUEPI.HelperHueAngSatBritoRGB = function(Ang, Sat, Bri)
   return {Red: Red, Green: Green, Blue: Blue};
 };
 
+
+
+HUEPI.HelperXYtoRGB = function(x,y)
+{ 
+  
+   x = x; // the given x value loat y = y; // the given y value loat z = 1.0 - x - y; loat Y = brightness; // The given brightness value loat X = (Y / y) * x;
+   Z = (Y / y) * z;
+
+   r = X * 3.2406 - Y * 1.5372 - Z * 0.4986;  g = -X * 0.9689 + Y * 1.8758 + Z * 0.0415;  b = X * 0.0557 - Y * 0.2040 + Z * 1.0570;
+
+  r = r <= 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math.pow(r, (1.0 / 2.4)) - 0.055; g = g <= 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math.pow(g, (1.0 / 2.4)) - 0.055; b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math.pow(b, (1.0 / 2.4)) - 0.055;
+
+  return {r: r, g: g, b: b};
+};
+
+
 HUEPI.HelperRGBtoXY = function(Red, Green, Blue)
 { // Range 0..1, return .x, .y
   // Adjust to Light XY CIE
@@ -553,12 +569,14 @@ HUEPI.prototype.LightSetHueAngSatBri = function(LightNr, Ang, Sat, Bri, Transiti
 
 HUEPI.prototype.LightSetRGB = function(LightNr, Red, Green, Blue, Transitiontime) // 0-255;FF
 {
-  //var HueAngSatBri = HUEPI.HelperRGBtoHueAngSatBri(Red / 255, Green / 255, Blue / 255);
-   //var State = new HUEPI.Lightstate();
-   //State.SetRGB(Red, Green, Blue);
-  //this.LightSetState(LightNr, State);
+  var HueAngSatBri = HUEPI.HelperRGBtoHueAngSatBri(Red / 255, Green / 255, Blue / 255);
+  var State = new HUEPI.Lightstate();
+  State.SetRGB(Red, Green, Blue);
+  this.LightSetState(LightNr, State);
 
 //https://github.com/PhilipsHue/PhilipsHueSDK-iOS-OSX/commit/f41091cf671e13fe8c32fcced12604cd31cceaf3
+  
+  return;
 
   /*OLD VERSION*/
   var Point = HUEPI.HelperRGBtoXY(Red / 255, Green / 255, Blue / 255);
