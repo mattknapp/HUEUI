@@ -238,6 +238,8 @@
           var HueImagedata = HueContext.getImageData(x, y, 1, 1); // one Pixel at Cursor
           var HueImagePixel = HueImagedata.data; // data[] RGBA  of Pixel 
 
+          var Brightness = parseInt($(this).val());
+
 
           if ($("#yourLights li.lightSelected").length == 0)
           {
@@ -247,10 +249,11 @@
                 var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
 
                 $("#yourLights li").eq(i).find("a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
-                MyHue.LightSetRGB(LightNr, HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
-                return;
+                MyHue.LightSetRGB(LightNr, HueImagePixel[0], HueImagePixel[1], HueImagePixel[2], 0, Brightness);
+               
 
               };
+               return;
             }
             else
             {
@@ -261,23 +264,26 @@
           $("#yourLights li.lightSelected a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
 
 
-          MyHue.LightSetRGB($("#yourLights li.lightSelected a").data('key'), HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
+          MyHue.LightSetRGB($("#yourLights li.lightSelected a").data('key'), HueImagePixel[0], HueImagePixel[1], HueImagePixel[2], 0, Brightness);
 
         });
 
         $('#brightnessslider').on('slidestop', function(event, ui) {
+
           var Brightness = parseInt($(this).val());
-          MyHue.LightSetBrightness($("#yourLights li.lightSelected a").data("key"), Brightness)
+          if ($("#yourLights li.lightSelected a").length > 0)
+            MyHue.LightSetBrightness($("#yourLights li.lightSelected a").data("key"), Brightness)
+
+          for (var i = $("#yourLights li input[type=checkbox]:checked").length - 1; i >= 0; i--) {
+                var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
+
+                MyHue.LightSetBrightness(LightNr, Brightness);
+          };
+
+
         });
 
-        LightSwitchOnEvent = document.createEvent("Event");
-        LightSwitchOnEvent.initEvent("LightSwitchOn", true, true);
-        document.addEventListener("LightSwitchOn", onLightSwitchOn, false);
-
-        LightSwitchOffEvent = document.createEvent("Event");
-        LightSwitchOffEvent.initEvent("LightSwitchOff", true, true);
-        document.addEventListener("LightSwitchOff", onLightSwitchOff, false);
-
+  
         ConnectMyHue();
       }
 
@@ -356,15 +362,6 @@
         StatusHeartbeat(); // Execute Immediate Too!
       }
 
-      function onLightSwitchOn(Event) {
-        MyHue.GroupOn(0);
-        MyHue.GroupSetCT(0, 467);
-        MyHue.GroupSetBrightness(0, 144);
-      }
-      function onLightSwitchOff(Event) {
-        MyHue.GroupOff(0);
-      }
-
       function StatusHeartbeat() {
         var PrevHueLights = MyHue.Lights; // Store Previous State of Lights
         MyHue.BridgeGetData().then(function UpdateUI() {
@@ -378,7 +375,6 @@
 
                 if ($("#yourLights li").length == 0)
                 {
-
 
                   while (MyHue.Lights[LightNr]) {
 

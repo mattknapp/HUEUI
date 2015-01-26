@@ -669,11 +669,12 @@ HUEPI.prototype.xyBriToRgb = function(x, y, bri){
         }
 
 
-HUEPI.prototype.LightSetRGB = function(LightNr, Red, Green, Blue, Transitiontime) // 0-255;FF
+HUEPI.prototype.LightSetRGB = function(LightNr, Red, Green, Blue, Transitiontime, Brightness) // 0-255;FF
 {
   var HueAngSatBri = HUEPI.HelperRGBtoHueAngSatBri(Red / 255, Green / 255, Blue / 255);
   var State = new HUEPI.Lightstate();
   State.SetRGB(Red, Green, Blue);
+  State.SetBrightness(Brightness);
   this.LightSetState(LightNr, State);
 
 //https://github.com/PhilipsHue/PhilipsHueSDK-iOS-OSX/commit/f41091cf671e13fe8c32fcced12604cd31cceaf3
