@@ -142,11 +142,15 @@
 
       function onStartup() {
 
-        $("#yourLights").on('click', 'li', function(x)
+        $("#yourLights").on('click', 'li a', function(x)
         {
         
           $("#yourLights li").removeClass("lightSelected");  
           $("#yourLights li").eq($(this).data('key')-1).addClass("lightSelected");
+
+
+          $('#brightnessslider').val(MyHue.Lights[$(this).data('key')].state.bri); 
+          $('#brightnessslider').slider('refresh');     
 
           $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.on").addClass('active');
           $("#yourLightsButtons li a[data-key="+$(this).data('key')+"].button.off").removeClass('active');
@@ -163,10 +167,14 @@
         $("#yourLightsButtons").on('click', 'a.button.on', function(x)
         {
        
+
            jsHueUser.setLightState($(this).data('key'), { on: true }, function(x)
            {
              
            });
+
+            $('#brightnessslider').val(MyHue.Lights[$(this).data('key')].state.bri); 
+            $('#brightnessslider').slider('refresh');     
 
            $("#yourLights li").removeClass("lightSelected");
 
@@ -229,19 +237,37 @@
           var HueContext = document.getElementById('HUECanvas').getContext('2d');
           var HueImagedata = HueContext.getImageData(x, y, 1, 1); // one Pixel at Cursor
           var HueImagePixel = HueImagedata.data; // data[] RGBA  of Pixel 
+
+
           if ($("#yourLights li.lightSelected").length == 0)
-            return;
+          {
+            if ( $("#yourLights li input[type=checkbox]:checked").length > 0 )
+            {
+              for (var i = $("#yourLights li input[type=checkbox]:checked").length - 1; i >= 0; i--) {
+                var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
 
-          $("#yourLights li.lightSelected").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
+                $("#yourLights li").eq(i).find("a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
+                MyHue.LightSetRGB(LightNr, HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
+                return;
+
+              };
+            }
+            else
+            {
+              return;
+            }
+          }
+
+          $("#yourLights li.lightSelected a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
 
 
-          MyHue.LightSetRGB($("#yourLights li.lightSelected").data('key'), HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
+          MyHue.LightSetRGB($("#yourLights li.lightSelected a").data('key'), HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
 
         });
 
         $('#brightnessslider').on('slidestop', function(event, ui) {
           var Brightness = parseInt($(this).val());
-          MyHue.GroupSetBrightness(0, Brightness);
+          MyHue.LightSetBrightness($("#yourLights li.lightSelected a").data("key"), Brightness)
         });
 
         LightSwitchOnEvent = document.createEvent("Event");
@@ -342,8 +368,10 @@
       function StatusHeartbeat() {
         var PrevHueLights = MyHue.Lights; // Store Previous State of Lights
         MyHue.BridgeGetData().then(function UpdateUI() {
-          $('#brightnessslider').val(MyHue.Lights[1].state.bri); // Get brightness of 1st light for now...
-          $('#brightnessslider').slider('refresh');
+          
+          //$('#brightnessslider').val(MyHue.Lights[1].state.bri); // Get brightness of 1st light for now...
+          //$('#brightnessslider').slider('refresh');
+          
           // Triggers on Reachable which actually means Powered On/Off in my case ;-)
           LightNr = 1;
           while (MyHue.Lights[LightNr]) {
@@ -351,7 +379,7 @@
                 if ($("#yourLights li").length == 0)
                 {
 
-                
+
                   while (MyHue.Lights[LightNr]) {
 
                      var theRGB = MyHue.xyBriToRgb(
@@ -360,8 +388,8 @@
                       MyHue.Lights[LightNr].state.bri);
 
 
-                    $("#yourLights").append('<li data-key=' + LightNr + ' style="color: rgb('+theRGB.r+','+theRGB.g+','+theRGB.b+')">'+ MyHue.Lights[LightNr].name + '</li>');
-                    $("#yourLightsButtons").append('<li data-key=' + LightNr + '><a data-key=' + LightNr + ' class="button on">ON</a><a data-key=' + LightNr + ' class="button off">OFF</a></li>');
+                    $("#yourLights").append('<li data-key="' + LightNr + '"><input type="checkbox" data-key="' + LightNr + '"/><a data-key="' + LightNr + '" style="color: rgb('+theRGB.r+','+theRGB.g+','+theRGB.b+')">' + MyHue.Lights[LightNr].name + '</a></li>');
+                    $("#yourLightsButtons").append('<li data-key="' + LightNr + '"><a data-key="' + LightNr + '"" class="button on">ON</a><a data-key="' + LightNr + '" class="button off">OFF</a></li>');
                     LightNr++;
                   }
                   LightNr = 1;
@@ -426,6 +454,9 @@
       <div class='container' id='HueButtons'>
         <div class='content'>
           <div class='items'>
+             <div min-width='128'>
+              <input style='display:none' data-mini='false' type='range' name='brightnessslider' id='brightnessslider' min='0' max='255' value='140' />
+            </div>
 
             <span style="float: left;">
             Your lights:
@@ -434,6 +465,7 @@
             <ol id="yourLights" style="clear: both;">
 
             </ol>
+            
             <ol id="yourLightsButtons">
 
             </ol>
