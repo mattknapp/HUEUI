@@ -241,12 +241,18 @@
           var Brightness = parseInt($(this).val());
 
 
-          if ($("#yourLights li.lightSelected").length == 0)
+           if ( $("#yourLights li input[type=checkbox]:checked").length > 0 )
           {
-            if ( $("#yourLights li input[type=checkbox]:checked").length > 0 )
-            {
+
+              $("#yourLights li").removeClass('lightSelected')
+
               for (var i = $("#yourLights li input[type=checkbox]:checked").length - 1; i >= 0; i--) {
                 var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
+
+               jsHueUser.setLightState(LightNr, { on: true }, function(x)
+               {
+                           
+               });
 
                 $("#yourLights li").eq(i).find("a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
                 MyHue.LightSetRGB(LightNr, HueImagePixel[0], HueImagePixel[1], HueImagePixel[2], 0, Brightness);
@@ -254,12 +260,15 @@
 
               };
                return;
-            }
-            else
-            {
-              return;
-            }
+            
           }
+
+
+          if ($("#yourLights li.lightSelected").length == 0)
+          {
+           return;
+          }
+          
 
           $("#yourLights li.lightSelected a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
 
