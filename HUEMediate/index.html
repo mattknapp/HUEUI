@@ -268,7 +268,7 @@
           {
            return;
           }
-          
+
 
           $("#yourLights li.lightSelected a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
 
@@ -280,14 +280,21 @@
         $('#brightnessslider').on('slidestop', function(event, ui) {
 
           var Brightness = parseInt($(this).val());
+          
+          if ( $("#yourLights li input[type=checkbox]:checked").length > 0)
+          {
+            for (var i = $("#yourLights li input[type=checkbox]:checked").length - 1; i >= 0; i--) {
+                  var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
+
+                  MyHue.LightSetBrightness(LightNr, Brightness);
+
+            };
+           return;
+          }
+
           if ($("#yourLights li.lightSelected a").length > 0)
             MyHue.LightSetBrightness($("#yourLights li.lightSelected a").data("key"), Brightness)
 
-          for (var i = $("#yourLights li input[type=checkbox]:checked").length - 1; i >= 0; i--) {
-                var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
-
-                MyHue.LightSetBrightness(LightNr, Brightness);
-          };
 
 
         });
