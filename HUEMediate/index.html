@@ -238,25 +238,35 @@
           var HueImagedata = HueContext.getImageData(x, y, 1, 1); // one Pixel at Cursor
           var HueImagePixel = HueImagedata.data; // data[] RGBA  of Pixel 
 
+          if ( $("#yourLights li input[type=checkbox]:checked").length > 0 )
+          {
+
+              $("#yourLights li").removeClass('lightSelected')
+
+
+              for (var i = $("#yourLights li input[type=checkbox]:checked").length - 1; i >= 0; i--) {
+
+                            var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
+
+                            $("#yourLights li").eq(i).find("a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
+
+                             jsHueUser.setLightState(LightNr, { on: true }, function(x)
+                             {
+                               
+                             });
+
+                            MyHue.LightSetRGB(LightNr, HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
+                          
+              };
+                return;
+
+          }
 
           if ($("#yourLights li.lightSelected").length == 0)
           {
-            if ( $("#yourLights li input[type=checkbox]:checked").length > 0 )
-            {
-              for (var i = $("#yourLights li input[type=checkbox]:checked").length - 1; i >= 0; i--) {
-                var LightNr = $("#yourLights li input[type=checkbox]:checked").eq([i]).data("key");
-
-                $("#yourLights li").eq(i).find("a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
-                MyHue.LightSetRGB(LightNr, HueImagePixel[0], HueImagePixel[1], HueImagePixel[2]);
-                return;
-
-              };
-            }
-            else
-            {
-              return;
-            }
+           return;
           }
+
 
           $("#yourLights li.lightSelected a").css('color', 'rgb('+HueImagePixel[0]+','+HueImagePixel[1]+','+HueImagePixel[2]+')');
 
